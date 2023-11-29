@@ -74,7 +74,49 @@ class OrdersController extends Controller
 
     public function dataById(Order $dataId)
     {
-        return $dataId;
+        $order = Order::leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+            ->leftJoin('products', 'orders.product_id', '=', 'products.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->where('orders.id', '=', $dataId['id'])
+            ->select(
+                'orders.id',
+                'orders.dateBuy',
+                'clients.id AS client_id',
+                'clients.last_name_doc',
+                'clients.phone_number',
+                'products.id AS product_id',
+                'products.name AS product_name',
+                'products.price AS product_price',
+                'categories.id AS category_id',
+                'categories.name AS category_name'
+            )
+            ->first();
+
+        if ($order) {
+            $formattedOrder = [
+                'order_id' => $order->id,
+                'order_date' => $order->dateBuy,
+                'client' => [
+                    'client_id' => $order->client_id,
+                    'client_name' => $order->last_name_doc,
+                    'client_email' => $order->phone_number,
+                ],
+                'products' => [
+                    'product_id' => $order->product_id,
+                    'product_name' => $order->product_name,
+                    'product_price' => $order->product_price,
+                    'category' => [
+                        'category_id' => $order->category_id,
+                        'category_name' => $order->category_name,
+                    ],
+                ],
+            ];
+
+            return response()->json($formattedOrder);
+        } else {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
     }
 
     /**
