@@ -41,7 +41,7 @@ Route::prefix('category')->group(function () {
 
 Route::group(['prefix' => 'order', 'middleware' => 'userRole'],function () {
     Route::get('/', [OrdersController::class, 'index']);
-    Route::get('/{dataId}', [OrdersController::class, 'dataById']);
+    Route::get('/{dataId}', [OrdersController::class, 'show']);
     Route::post('/', [OrdersController::class, 'store']);
     Route::put('/{dataId}', [OrdersController::class, 'update']);
     Route::delete('/{dataId}', [OrdersController::class, 'delete']);
@@ -49,12 +49,12 @@ Route::group(['prefix' => 'order', 'middleware' => 'userRole'],function () {
 
 Route::group(['prefix' => 'user/product', 'middleware' => 'userRole'], function () {
     Route::get('/', [ProductsController::class, 'index']);
-    Route::get('/{dataId}', [ProductsController::class, 'dataById']);
+    Route::get('/{dataId}', [ProductsController::class, 'show']);
 });
 
 Route::group(['prefix' => 'admin/product', 'middleware' => 'adminRole'], function () {
     Route::get('/', [ProductsController::class, 'index']);
-    Route::get('/{dataId}', [ProductsController::class, 'dataById']);
+    Route::get('/{dataId}', [ProductsController::class, 'show']);
     Route::post('/', [ProductsController::class, 'store']);
     Route::put('/{dataId}', [ProductsController::class, 'update']);
     Route::delete('/{dataId}', [ProductsController::class, 'delete']);

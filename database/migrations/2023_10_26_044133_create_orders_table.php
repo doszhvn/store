@@ -15,18 +15,12 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('user_id');
             $table->timestamp('dateBuy')->default(now());
-
-            $table->index('product_id','idx_porder_product');
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-
             $table->index('user_id','idx_order_user');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
-            $table->timestamps();
             $table->softDeletes();
+            $table->timestamps();
 
         });
     }

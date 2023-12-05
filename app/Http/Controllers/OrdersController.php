@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Services\OrderService;
 
 class OrdersController extends Controller
@@ -11,85 +12,75 @@ class OrdersController extends Controller
     public function index()
     {
 
-        $orders = Order::leftJoin('users', 'orders.user_id', '=', 'users.id')
-            ->leftJoin('products', 'orders.product_id', '=', 'products.id')
-            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-//            ->where('user_id', '=', auth()->user()->id)
-            ->select(
-                'orders.id',
-                'orders.dateBuy',
-                'users.id AS client_id',
-                'users.last_name_doc',
-                'users.phone_number',
-                'users.email',
-                'products.id AS product_id',
-                'products.name AS product_name',
-                'products.price AS product_price',
-                'categories.id AS category_id',
-                'categories.name AS category_name'
-            )->get();
+        $orders = Order::with(['user', 'products.category'])
+            ->get();
 
-        $formattedOrders = [];
-
-        foreach ($orders as $order) {
-            $formattedOrder = [
+        $formattedOrders = $orders->map(function ($order) {
+            return [
                 'order_id' => $order->id,
                 'order_date' => $order->dateBuy,
                 'client' => [
-                    'client_id' => $order->client_id,
-                    'client_name' => $order->last_name_doc,
-                    'client_email' => $order->email,
+                    'client_id' => $order->user->id,
+                    'client_name' => $order->user->last_name_doc,
+                    'client_email' => $order->user->email,
                 ],
-                'products' => [
-                    'product_id' => $order->product_id,
-                    'product_name' => $order->product_name,
-                    'product_price' => $order->product_price,
-                    'category' => [
-                        'category_id' => $order->category_id,
-                        'category_name' => $order->category_name,
-                    ],
-                ],
+                'products' => $order->products->map(function ($product) {
+                    return [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'product_price' => $product->price,
+                        'category' => [
+                            'category_id' => $product->category->id,
+                            'category_name' => $product->category->name,
+                        ],
+                    ];
+                }),
             ];
+        });
 
-            // Проверка, существует ли заказ в $formattedOrders
-            $existingOrder = collect($formattedOrders)->firstWhere('order_id', $order->order_id);
+        return response()->json($formattedOrders);
+    }
+    public function userOrders()
+    {
 
-            // Если заказ уже существует, добавляем продукт к существующему заказу
-            if ($existingOrder) {
-                $existingOrder['products'][] = $formattedOrder['products'][0];
-            } else {
-                $formattedOrders[] = $formattedOrder;
-            }
-        }
+        $orders = Order::with(['user', 'products.category'])
+            ->where('user_id', '=', auth()->user()->id)
+            ->get();
 
-        return response()->json(['orders' => $formattedOrders]);
+        $formattedOrders = $orders->map(function ($order) {
+            return [
+                'order_id' => $order->id,
+                'order_date' => $order->dateBuy,
+                'client' => [
+                    'client_id' => $order->user->id,
+                    'client_name' => $order->user->last_name_doc,
+                    'client_email' => $order->user->email,
+                ],
+                'products' => $order->products->map(function ($product) {
+                    return [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'product_price' => $product->price,
+                        'category' => [
+                            'category_id' => $product->category->id,
+                            'category_name' => $product->category->name,
+                        ],
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json($formattedOrders);
     }
 
-
-
-
     /**
-     * @return Order
+     * @return \Illuminate\Http\JsonResponse
      */
 
-    public function dataById(Order $dataId)
+    public function show(Order $dataId)
     {
-        $order = Order::leftJoin('clients', 'orders.client_id', '=', 'clients.id')
-            ->leftJoin('products', 'orders.product_id', '=', 'products.id')
-            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+        $order = Order::with(['user', 'products.category'])
             ->where('orders.id', '=', $dataId['id'])
-            ->select(
-                'orders.id',
-                'orders.dateBuy',
-                'clients.id AS client_id',
-                'clients.last_name_doc',
-                'clients.phone_number',
-                'products.id AS product_id',
-                'products.name AS product_name',
-                'products.price AS product_price',
-                'categories.id AS category_id',
-                'categories.name AS category_name'
-            )
             ->first();
 
         if ($order) {
@@ -97,24 +88,26 @@ class OrdersController extends Controller
                 'order_id' => $order->id,
                 'order_date' => $order->dateBuy,
                 'client' => [
-                    'client_id' => $order->client_id,
-                    'client_name' => $order->last_name_doc,
-                    'client_email' => $order->phone_number,
+                    'client_id' => $order->user->id,
+                    'client_name' => $order->user->last_name_doc,
+                    'client_email' => $order->user->email,
                 ],
-                'products' => [
-                    'product_id' => $order->product_id,
-                    'product_name' => $order->product_name,
-                    'product_price' => $order->product_price,
-                    'category' => [
-                        'category_id' => $order->category_id,
-                        'category_name' => $order->category_name,
-                    ],
-                ],
+                'products' => $order->products->map(function ($product) {
+                    return [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'product_price' => $product->price,
+                        'category' => [
+                            'category_id' => $product->category->id,
+                            'category_name' => $product->category->name,
+                        ],
+                    ];
+                }),
             ];
 
             return response()->json($formattedOrder);
         } else {
-            return response()->json(['error' => 'Order not found'], 404);
+            return response()->json(['message' => 'Order not found'], 404);
         }
 
     }
@@ -136,14 +129,14 @@ class OrdersController extends Controller
 
     /**
      * @param OrderRequest $request
-     * @return string
+     * @return string[]
      */
     public function store(OrderRequest $request, OrderService $service)
     {
-        $data = $request->validated();
-        $data['user_id'] = auth()->user()->id;
-        if ($data) {
-            return $service->store($data);
+        $products = $request->validated();
+        $order['user_id'] = auth()->user()->id;
+        if ($order) {
+            return $service->store($order, $products);
         }
     }
 

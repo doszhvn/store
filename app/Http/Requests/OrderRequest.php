@@ -24,7 +24,7 @@ class OrderRequest extends FormRequest
     public function rules()
     {
         return [
-            'product_id' => 'required|integer',
+            '*.product_id' => 'required|integer',
         ];
     }
 }

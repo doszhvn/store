@@ -16,7 +16,7 @@ class ProductsController extends Controller
         return Product::all();
     }
 
-    public function dataById(Product $dataId)
+    public function show(Product $dataId)
     {
         return $dataId;
     }

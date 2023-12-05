@@ -12,4 +12,21 @@ class Order extends Model
     use SoftDeletes;
     protected $guarded = false;
 
+    // Order.php (модель Order)
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function orderProducts()
+    {
+        return $this->hasMany(OrderProduct::class);
+    }
+
+    public function products()
+    {
+        return $this->hasManyThrough(Product::class, OrderProduct::class, 'order_id', 'id', 'id', 'product_id');
+    }
+
 }

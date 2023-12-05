@@ -2,15 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Client;
+use App\Models\Order;
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\OrderProduct>
  */
-class OrderFactory extends Factory
+class OrderProductFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,7 +19,8 @@ class OrderFactory extends Factory
     public function definition()
     {
         return [
-            'user_id' => User::get()->random()->id,
+            'order_id' => Order::get()->random()->id,
+            'product_id' => Product::get()->random()->id,
         ];
     }
 }
