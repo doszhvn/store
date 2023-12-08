@@ -19,7 +19,9 @@ class ProductFactory extends Factory
     {
         return [
             'name' => $this->faker->domainName(),
-            'quantity' => $this->faker->numberBetween(0, 1),
+            'description' => $this->faker->text(),
+            'image' => 'https://via.placeholder.com/640x480.png/00bbaa?text=product',
+            'quantity' => $this->faker->numberBetween(10, 100),
             'price' => $this->faker->numberBetween(100000, 999999),
             'category_id' => Category::get()->random()->id,
         ];

@@ -25,6 +25,7 @@ class OrderRequest extends FormRequest
     {
         return [
             '*.product_id' => 'required|integer',
+            '*.quantity' => 'required|integer',
         ];
     }
 }

@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
-use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Services\OrderService;
+use Illuminate\Support\Facades\DB;
 
-class OrdersController extends Controller
+
+class OrderController extends Controller
 {
     public function index()
     {
@@ -29,6 +31,7 @@ class OrdersController extends Controller
                         'product_id' => $product->id,
                         'product_name' => $product->name,
                         'product_price' => $product->price,
+                        'quantity' => $product->quantity,
                         'category' => [
                             'category_id' => $product->category->id,
                             'category_name' => $product->category->name,
@@ -56,7 +59,8 @@ class OrdersController extends Controller
                     'client_name' => $order->user->last_name_doc,
                     'client_email' => $order->user->email,
                 ],
-                'products' => $order->products->map(function ($product) {
+                'products' => $order->products->map(function ($product) use ($order) {
+                    $orderProduct = $order->orderProducts->where('product_id', $product->id)->first();
                     return [
                         'product_id' => $product->id,
                         'product_name' => $product->name,
@@ -65,7 +69,10 @@ class OrdersController extends Controller
                             'category_id' => $product->category->id,
                             'category_name' => $product->category->name,
                         ],
+                        'quantity' => $product->quantity,
+                        'ordered_quantity' => $orderProduct ? $orderProduct->quantity : 0,
                     ];
+
                 }),
             ];
         });
@@ -114,22 +121,7 @@ class OrdersController extends Controller
 
     /**
      * @param OrderRequest $request
-     * @param OrderService $service
-     * @param Order $dataId
-     * @return string[]
-     */
-    public function update(OrderRequest $request, OrderService $service, Order $dataId)
-    {
-
-        $updatedOrder = $request->validated();
-        if ($updatedOrder) {
-            return $service->update($dataId, $updatedOrder);
-        }
-    }
-
-    /**
-     * @param OrderRequest $request
-     * @return string[]
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(OrderRequest $request, OrderService $service)
     {
@@ -140,17 +132,9 @@ class OrdersController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     * @return string
-     */
-    public function delete($dataId)
+
+    public function cancelOrder(OrderService $service, $orderId)
     {
-        $category = Order::find($dataId);
-        if ($category->delete()) {
-            return 'successfully deleted';
-        } else {
-            return 'not deleted';
-        }
+        return $service->cancelOrder($orderId);
     }
 }

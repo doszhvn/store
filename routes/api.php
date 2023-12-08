@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\OrdersController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Permissions\PermissionController;
 use App\Http\Controllers\Permissions\RolesController;
 use App\Http\Controllers\PostsController;
-use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,38 +27,33 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/', function () {
-    return ['message' => 'Hello World'];
+    return ['message' => 'Welcome to STORE APP Backend'];
 });
 
 Route::prefix('category')->group(function () {
-        Route::post('restore-Category', [\App\Http\Controllers\CategoriesController::class, 'restoreCategory']);
-        Route::post('store-Category', [\App\Http\Controllers\CategoriesController::class, 'store']);
-        Route::put('update-Category/{category}', [\App\Http\Controllers\CategoriesController::class, 'update']);
-        Route::get('categories', [\App\Http\Controllers\CategoriesController::class, 'index']);
-        Route::delete('delete-Category/{id}', [\App\Http\Controllers\CategoriesController::class, 'delete']);
-        Route::get('products-by-Category/{id}', [\App\Http\Controllers\CategoriesController::class, 'productsByCategory']);
-        Route::get('get-info', [\App\Http\Controllers\CategoriesController::class, 'getInfo']);
+    Route::get('/', [CategoryController::class, 'index']);
+    Route::get('/{dataId}', [CategoryController::class, 'show']);
+    Route::post('/', [CategoryController::class, 'store'])->middleware('moderatorRole');
+    Route::put('/{dataId}', [CategoryController::class, 'update'])->middleware('moderatorRole');
+    Route::delete('/{dataId}', [CategoryController::class, 'delete'])->middleware('adminRole');
 });
 
 Route::group(['prefix' => 'order', 'middleware' => 'userRole'],function () {
-    Route::get('/', [OrdersController::class, 'index']);
-    Route::get('/{dataId}', [OrdersController::class, 'show']);
-    Route::post('/', [OrdersController::class, 'store']);
-    Route::put('/{dataId}', [OrdersController::class, 'update']);
-    Route::delete('/{dataId}', [OrdersController::class, 'delete']);
+    Route::get('/', [OrderController::class, 'userOrders']);
+    Route::get('/{dataId}', [OrderController::class, 'show']);
+    Route::post('/', [OrderController::class, 'store']);
+    Route::delete('/{dataId}', [OrderController::class, 'delete']);
+    Route::delete('/cancel/{orderId}', [OrderController::class, 'cancelOrder']);
 });
 
-Route::group(['prefix' => 'user/product', 'middleware' => 'userRole'], function () {
-    Route::get('/', [ProductsController::class, 'index']);
-    Route::get('/{dataId}', [ProductsController::class, 'show']);
-});
+Route::get('admin/order', [OrderController::class, 'index'])->middleware('adminRole');
 
-Route::group(['prefix' => 'admin/product', 'middleware' => 'adminRole'], function () {
-    Route::get('/', [ProductsController::class, 'index']);
-    Route::get('/{dataId}', [ProductsController::class, 'show']);
-    Route::post('/', [ProductsController::class, 'store']);
-    Route::put('/{dataId}', [ProductsController::class, 'update']);
-    Route::delete('/{dataId}', [ProductsController::class, 'delete']);
+Route::group(['prefix' => 'product'], function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/{dataId}', [ProductController::class, 'show']);
+    Route::post('/', [ProductController::class, 'store'])->middleware('moderatorRole');
+    Route::put('/{dataId}', [ProductController::class, 'update'])->middleware('moderatorRole');
+    Route::delete('/{dataId}', [ProductController::class, 'delete'])->middleware('adminRole');
 });
 
 

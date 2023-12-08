@@ -6,7 +6,7 @@ use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use App\Services\ProductService;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
     /**
      * @return \Illuminate\Database\Eloquent\Collection
@@ -25,7 +25,7 @@ class ProductsController extends Controller
      * @param ProductRequest $request
      * @param ProductService $service
      * @param Product $dataId
-     * @return string
+     * @return string[]
      */
     public function update(ProductRequest $request, ProductService $service, Product $dataId)
     {
@@ -37,7 +37,7 @@ class ProductsController extends Controller
 
     /**
      * @param ProductRequest $request
-     * @return string
+     * @return string[]
      */
     public function store(ProductRequest $request, ProductService $service)
     {

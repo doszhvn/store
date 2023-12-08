@@ -39,8 +39,6 @@ class DatabaseSeeder extends Seeder
             'password'=>'$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             'role'=>'moderator'
         ]);
-        User::factory(10)->create();
-        Order::factory(10)->create();
-//        OrderProduct::factory(10)->create();
+        User::factory(8)->create();
     }
 }
